@@ -10,13 +10,21 @@ database = 'ssm03db'
 db = pymysql.connect(host, user, pwd, database, charset='utf8')
 cursor = db.cursor()
 
+# 数据库表信息
+# table: train
+# fields: trainId, trainType, trainNo, startStation, stopStation, trainCode
+
+# 车次日期
+date = '2018-07-05'
+# json数据文件
+in_file = '../source/train_list_2018-07-05.json'
+
 
 def add_train_row(data):
     if len(data) != 5:
         print(data, '数据异常')
         return
 
-    # train(id,type,trainNo,startStation,stopStation,tCode)
     sql = "insert into train values(null,'{0[type]}','{0[trainNo]}','{0[start]}','{0[stop]}','{0[code]}')".format(data)
 
     try:
@@ -28,14 +36,13 @@ def add_train_row(data):
 
 
 def main():
-    file = '../train-list.json'
-    date = '2018-07-05'
     data = {}
+    # 数据分割的正则
     pattern = r'[-()]'
 
-    with open(file, 'r', encoding='utf-8') as load_file:
+    with open(in_file, 'r', encoding='utf-8') as load_file:
         count = 0
-        load_dict = json.load(load_file).get(date)
+        load_dict = json.load(load_file)
         for train_type in load_dict.keys():
             data['type'] = train_type
             for row in load_dict[train_type]:
