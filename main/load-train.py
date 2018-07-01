@@ -1,58 +1,49 @@
 import re
 import pymysql
 import json
+from config import conf
 
 # 数据库连接
-host = '127.0.0.1'
-user = 'root'
-pwd = 'root'
-database = 'ssm03db'
-db = pymysql.connect(host, user, pwd, database, charset='utf8')
+db = pymysql.connect(conf.db['host'], conf.db['user'], conf.db['pwd'], conf.db['database'], charset='utf8')
 cursor = db.cursor()
 
-# 数据库表信息
-# table: train
-# fields: trainId, trainType, trainNo, startStation, stopStation, trainCode
-
-# 车次日期
-date = '2018-07-05'
 # json数据文件
 in_file = '../source/train_list_2018-07-05.json'
 
 
-def add_train_row(data):
-    if len(data) != 5:
-        print(data, '数据异常')
+def add_train_row(row):
+    if len(row) != 6:
+        print(row, '数据异常')
         return
 
-    sql = "insert into train values(null,'{0[type]}','{0[trainNo]}','{0[start]}','{0[stop]}','{0[code]}')".format(data)
-
     try:
-        cursor.execute(sql)
+        cursor.execute(conf.insert_train_sql.format(row))
         db.commit()
     except:
         db.rollback()
-        print(data, '添加失败')
+        print(row, '添加失败')
 
 
 def main():
-    data = {}
+    insert_data = {}
     # 数据分割的正则
     pattern = r'[-()]'
 
     with open(in_file, 'r', encoding='utf-8') as load_file:
         count = 0
-        load_dict = json.load(load_file)
-        for train_type in load_dict.keys():
-            data['type'] = train_type
-            for row in load_dict[train_type]:
-                data['code'] = row['train_no']
-                info = re.split(pattern, row['station_train_code'])
-                data['trainNo'] = info[0]
-                data['start'] = info[1]
-                data['stop'] = info[2]
-                add_train_row(data)
+        train_dict = json.load(load_file)
+        for train_type in train_dict.keys():
+            insert_data['type'] = train_type
+            for row in train_dict[train_type]:
                 count += 1
+                insert_data['id'] = count
+                insert_data['code'] = row['train_no']
+                # 解析车次、出发、终点信息
+                info = re.split(pattern, row['station_train_code'])
+                insert_data['trainNo'] = info[0]
+                insert_data['start'] = info[1]
+                insert_data['stop'] = info[2]
+                add_train_row(insert_data)
 
                 if count % 100 == 0:
                     print(count)

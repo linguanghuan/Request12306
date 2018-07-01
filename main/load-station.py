@@ -1,12 +1,9 @@
 import re
 import pymysql
+from config import conf
 
 # 数据库连接
-host = '127.0.0.1'
-user = 'root'
-pwd = 'root'
-database = 'ssm03db'
-db = pymysql.connect(host, user, pwd, database, charset='utf8')
+db = pymysql.connect(conf.db['host'], conf.db['user'], conf.db['pwd'], conf.db['database'], charset='utf8')
 cursor = db.cursor()
 
 
@@ -15,10 +12,8 @@ def add_station_row(row):
         print(row, '数据异常')
         return
 
-    sql = "insert into station values({0[5]},'{0[0]}','{0[1]}','{0[2]}','{0[3]}','{0[4]}')".format(row)
-
     try:
-        cursor.execute(sql)
+        cursor.execute(conf.insert_station_sql.format(row))
         db.commit()
     except:
         db.rollback()
@@ -26,7 +21,7 @@ def add_station_row(row):
 
 
 def main():
-    file_path = '../station_name.js'
+    file_path = '../source/station_name.js'
     count = 0
 
     file_pattern = re.compile(r"'(.*?)'")

@@ -1,17 +1,11 @@
 import requests
 import pymysql
 import json
+from config import conf
 
 # 数据库连接
-host = '127.0.0.1'
-user = 'root'
-pwd = 'root'
-database = 'ssm03db'
-db = pymysql.connect(host, user, pwd, database, charset='utf8')
+db = pymysql.connect(conf.db['host'], conf.db['user'], conf.db['pwd'], conf.db['database'], charset='utf8')
 cursor = db.cursor()
-
-# 查询的日期
-date = '2018-07-05'
 
 
 def request_train_detail_info(req_info):
@@ -28,7 +22,7 @@ def request_train_detail_info(req_info):
         'train_no': req_info['trainInfo'][-1],
         'from_station_telecode': req_info['start'][0],
         'to_station_telecode': req_info['stop'][0],
-        'depart_date': date
+        'depart_date': conf.date
     }
     req = requests.get(url, data).json().get('data').get('data')
     train_info['data'] = req
@@ -39,19 +33,17 @@ def request_train_detail_info(req_info):
     return train_info
 
 
-def query_request_info(trainId):
+def query_request_info(train_id):
     '''
     根据车次id，从数据库查询对应车次的信息，以及车次起始站、终点站对应的电报码
-    :param trainId: 数据库中，车次对应的id
+    :param train_id: 数据库中，车次对应的id
     :return: 请求所需的车次相关信息
     '''
 
-    req_info = {}
-    train_sql = "select trainNo,startStation,stopStation,trainCode from train where trainId={}"
-    station_sql = "select stationCode from station where stationName='{}'"
+    req_info = {'id': train_id}
 
     # 车次信息查询
-    cursor.execute(train_sql.format(trainId))
+    cursor.execute(conf.select_train_sql.format(train_id))
     train_info = cursor.fetchone()
     req_info['trainInfo'] = train_info
     if not train_info or len(train_info) != 4:
@@ -60,14 +52,14 @@ def query_request_info(trainId):
         return req_info
 
     # 起始站编码查询
-    cursor.execute(station_sql.format(train_info[1]))
+    cursor.execute(conf.select_station_sql.format(train_info[1]))
     start_code = cursor.fetchone()
     req_info['start'] = start_code
     if not start_code:
         req_info['error'] = True
 
     # 终点站编码查询
-    cursor.execute(station_sql.format(train_info[2]))
+    cursor.execute(conf.select_station_sql.format(train_info[2]))
     stop_code = cursor.fetchone()
     req_info['stop'] = stop_code
     if not stop_code:
