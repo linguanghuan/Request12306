@@ -28,6 +28,8 @@ select_train_sql = "select trainNo,startStation,stopStation,tCode from train whe
 
 select_train_id = "select trainId from train where trainNo='{}'"
 
+query_train_id_num = "select count(*) from sch where trainId={}"
+
 
 # table:    station
 # fields:   id, simpleSpell, sName, sCode, spell, initial
@@ -35,9 +37,9 @@ select_train_id = "select trainId from train where trainNo='{}'"
 insert_station_sql = "insert into station values({0[5]},'{0[0]}','{0[1]}','{0[2]}','{0[3]}','{0[4]}')"
 select_station_sql = "select sCode from station where sName='{}'"
 
-# table:    schedule
+# table:    sch(schedule)
 # fields:   id, trainId, stationNo, station, arrive, start, stopover
-insert_schedule_sql = "insert into schedule values('{0[id]}','{0[trainId]}','{0[stationNo]}','{0[station]}'," \
+insert_schedule_sql = "insert into sch values('{0[id]}','{0[trainId]}','{0[stationNo]}','{0[station]}'," \
                       "'{0[arrive]}','{0[start]}','{0[stopover]}')"
 
 

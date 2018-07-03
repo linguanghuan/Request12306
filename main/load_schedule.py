@@ -14,6 +14,12 @@ def query_train_id(train_no):
     return cursor.fetchone()[0]
 
 
+def check_repeat_train(train_no):
+    train_id = query_train_id(train_no)
+    cursor.execute(conf.query_train_id_num.format(train_id))
+    return cursor.fetchone()[0]
+
+
 def add_schedule(data):
     cursor.execute(conf.insert_schedule_sql.format(data))
     db.commit()
@@ -57,10 +63,18 @@ def main():
             # 站点列表
             station_list = []
 
-            train_count += 1
-
             # str -> dict
             train_info = json.loads(line)
+
+            # 处理重复数据(重复车次)
+            # 数据中第一站包含有车次信息
+            train_no = train_info['data'][0]['station_train_code']
+            if check_repeat_train(train_no) > 0:
+                print(train_info)
+                continue
+
+            train_count += 1
+
             for station in train_info['data']:
                 schedule_count += 1
                 schedule_row['id'] = schedule_count
@@ -73,14 +87,14 @@ def main():
                 # 站点名收集
                 station_list.append(station['station_name'])
 
-            # # 车次查询表数据收集
-            # search_row['id'] = train_count
-            # search_row['trainId'] = schedule_row['trainId']
-            # search_row['stations'] = '-'.join(station_list)
-            # search_row['size'] = len(station_list)
-            # # 车次查找表数据写入
-            # # print(search_row)
-            # add_search(search_row)
+            # 车次查询表数据收集
+            search_row['id'] = train_count
+            search_row['trainId'] = schedule_row['trainId']
+            search_row['stations'] = '-'.join(station_list)
+            search_row['size'] = len(station_list)
+            # 车次查找表数据写入
+            # print(search_row)
+            add_search(search_row)
 
             if train_count % 100 == 0:
                 print(train_count)
