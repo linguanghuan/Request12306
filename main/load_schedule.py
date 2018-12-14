@@ -1,3 +1,6 @@
+import sys
+sys.path.append("..")
+
 from config import conf
 import pymysql
 import json
@@ -7,6 +10,7 @@ db = pymysql.connect(conf.db['host'], conf.db['user'], conf.db['pwd'], conf.db['
 cursor = db.cursor()
 
 load_file = '../source/detail_list.json'
+err_file = '../source/sch_err.json'
 
 
 def query_train_id(train_no):
@@ -51,7 +55,7 @@ def format_station_info(format_dict, station_info):
 
 
 def main():
-    with open(load_file, 'r', encoding='utf-8') as fs:
+    with open(load_file, 'r', encoding='utf-8') as fs, open(err_file, 'w', encoding='utf-8') as err:
         schedule_count = 0
         train_count = 0
 
@@ -82,19 +86,27 @@ def main():
 
                 # 写入站点详情记录
                 # print(schedule_row)
-                add_schedule(schedule_row)
+                try:
+                	add_schedule(schedule_row)
+                except Exception as e:
+                	err.write(json.dumps(schedule_row) + '\n')
+                finally:
+                	pass
+                
 
                 # 站点名收集
                 station_list.append(station['station_name'])
-
-            # 车次查询表数据收集
-            search_row['id'] = train_count
-            search_row['trainId'] = schedule_row['trainId']
-            search_row['stations'] = '-'.join(station_list)
-            search_row['size'] = len(station_list)
-            # 车次查找表数据写入
-            # print(search_row)
-            add_search(search_row)
+            try:
+            	# 车次查询表数据收集
+	            search_row['id'] = train_count
+	            search_row['trainId'] = schedule_row['trainId']
+	            search_row['stations'] = '-'.join(station_list)
+	            search_row['size'] = len(station_list)
+	            # 车次查找表数据写入
+	            # print(search_row)
+	            add_search(search_row)
+            except Exception as e:
+            	err.write(json.dumps(search_row) + '\n')
 
             if train_count % 100 == 0:
                 print(train_count)

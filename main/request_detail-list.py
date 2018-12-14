@@ -1,3 +1,6 @@
+import sys
+sys.path.append("..")
+
 import requests
 import pymysql
 import json

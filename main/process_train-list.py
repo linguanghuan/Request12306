@@ -5,7 +5,7 @@ import json
 '''
 
 in_file = '../source/train_list.js'
-date = '2018-07-05'
+date = '2018-12-14'
 
 
 def get_start_letter_index(letter):

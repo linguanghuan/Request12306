@@ -1,3 +1,6 @@
+import sys
+sys.path.append("..")
+
 import re
 import pymysql
 import json
@@ -8,7 +11,7 @@ db = pymysql.connect(conf.db['host'], conf.db['user'], conf.db['pwd'], conf.db['
 cursor = db.cursor()
 
 # json数据文件
-in_file = '../source/train_list_2018-07-05.json'
+in_file = '../source/train_list_2018-12-14.json'
 
 
 def add_train_row(row):

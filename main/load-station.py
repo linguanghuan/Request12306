@@ -1,5 +1,10 @@
+# -*- coding: utf-8 -*-
+import sys
+sys.path.append("..")
+
 import re
 import pymysql
+
 from config import conf
 
 # 数据库连接
